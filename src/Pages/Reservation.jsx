@@ -6,7 +6,9 @@ export default function Reservation() {
   const [selectedVehicleType, setselectedVehicleType] = useState("");
   const [selectedVehicleName, setselectedVehicleName] = useState("");
   const [startDateTime, setStartDateTime] = useState("");
+  const [selectedOptions, setSelectedOptions] = useState([]);
   const [endDateTime, setEndDateTime] = useState("");
+  const [rentalTax, setRentalTax] = useState("");
   const pickUpDate = new Date(startDateTime);
   const returnDate = new Date(endDateTime);
   const durationInSecond = (returnDate - pickUpDate) / 1000;
@@ -14,7 +16,7 @@ export default function Reservation() {
   const durationInHour = Math.floor(durationInMinute / 60);
 
   // get data from api using tanstack query
-  const { data } = useQuery({
+  const { data, isPending } = useQuery({
     queryKey: ["vehicleData"],
     queryFn: async () => {
       return await axios.get(
@@ -46,6 +48,53 @@ export default function Reservation() {
   const filteredVehicle = vehicleData?.filter(
     (vehicle) => vehicle.type === selectedVehicleType
   );
+  //   for rental rate
+  const handleRentalTax = (e) => {
+    const { checked, value } = e.target;
+    if (checked) {
+      setRentalTax(value);
+    } else {
+      setRentalTax("");
+    }
+  };
+  const taxPercentage = rentalTax?.split(",")[1];
+  const taxRate = parseFloat(taxPercentage);
+  // for checkboxes
+  const handleCheckboxChange = (event) => {
+    const { checked, value } = event.target;
+
+    setSelectedOptions((prevState) => {
+      if (checked) {
+        return [...prevState, value];
+      } else {
+        return prevState.filter((option) => option !== value);
+      }
+    });
+  };
+  const totalOptionsRate = selectedOptions?.reduce((total, option) => {
+    const optionRate = option.split(",")[1];
+    const convertToNumber = parseInt(optionRate);
+    return total + convertToNumber;
+  }, 0);
+  //   Detect vehicle for rates, based on vehicle information
+  const singleVehicaleForRate = vehicleData?.filter(
+    (vehicle) =>
+      vehicle.type === selectedVehicleType &&
+      vehicle.make === selectedVehicleName
+  );
+  const getRatesFromArray = singleVehicaleForRate?.[0]?.rates;
+  const hourlyRate = getRatesFromArray?.hourly;
+  const dailyRate = getRatesFromArray?.daily;
+  const weeklyRate = getRatesFromArray?.weekly;
+  const totalHourlyRate = remainingFinalHours * hourlyRate || 0;
+  const totalDailyRate = days * dailyRate || 0;
+  const totalWeeklyRate = weeks * weeklyRate || 0;
+  const totalRate =
+    totalHourlyRate + totalDailyRate + totalWeeklyRate + totalOptionsRate;
+  const calculateTaxAmount = (totalRate * taxRate) / 100;
+  const finalRate = calculateTaxAmount
+    ? totalRate - calculateTaxAmount
+    : totalRate;
   const handleVehicleName = (e) => {
     setselectedVehicleName(e.target.value);
   };
@@ -74,7 +123,10 @@ export default function Reservation() {
       })
       .catch((error) => console.error("Error generating PDF:", error));
   };
-  console.log(selectedVehicleType, selectedVehicleName, durationInHour);
+  console.log();
+  if (isPending) {
+    return <h1>Loading...</h1>;
+  }
   return (
     <>
       <section className=" bg-slate-100">
@@ -314,13 +366,17 @@ export default function Reservation() {
                   </div>
                   <div className="bg-white p-4 rounded-lg border-2 border-gray-300 shadow-md">
                     <div className="mb-6 flex justify-between">
-                      <label htmlFor="checkbox1" className="flex items-center">
+                      <label
+                        htmlFor="Damage_Waiver"
+                        className="flex items-center"
+                      >
                         <input
                           type="checkbox"
-                          id="checkbox1"
-                          name="checkbox1"
-                          value="option1"
+                          id="Damage_Waiver"
+                          name="Damage_Waiver"
+                          value="Collision Damage Waiver, 9"
                           className="mr-2"
+                          onChange={handleCheckboxChange}
                         />
                         Collision Damage Waiver
                       </label>
@@ -328,13 +384,14 @@ export default function Reservation() {
                     </div>
 
                     <div className="mb-6 flex justify-between">
-                      <label htmlFor="checkbox2" className="flex items-center">
+                      <label htmlFor="Insurance" className="flex items-center">
                         <input
                           type="checkbox"
-                          id="checkbox2"
-                          name="checkbox2"
-                          value="option2"
+                          id="Insurance"
+                          name="Insurance"
+                          value="Liability Insurance, 15"
                           className="mr-2"
+                          onChange={handleCheckboxChange}
                         />
                         Liability Insurance
                       </label>
@@ -345,10 +402,11 @@ export default function Reservation() {
                       <label htmlFor="checkbox3" className="flex items-center">
                         <input
                           type="checkbox"
-                          id="checkbox3"
-                          name="checkbox3"
-                          value="option3"
+                          id="Rental_Tax"
+                          name="Rental_Tax"
+                          value=" Rental Tax, 11.5"
                           className="mr-2"
+                          onChange={handleRentalTax}
                         />
                         Rental Tax
                       </label>
@@ -376,28 +434,69 @@ export default function Reservation() {
                   <tbody>
                     <tr>
                       <td className="py-2 px-4">Hourly</td>
-                      <td className="py-2 px-4">{remainingFinalHours || ""}</td>
-                      <td className="py-2 px-4">$50</td>
-                      <td className="py-2 px-4">$500</td>
+                      <td className="py-2 px-4">{remainingFinalHours || 0}</td>
+                      <td className="py-2 px-4">
+                        ${hourlyRate?.toFixed(2) || 0}
+                      </td>
+                      <td className="py-2 px-4">
+                        ${totalHourlyRate?.toFixed(2)}
+                      </td>
                     </tr>
                     <tr>
                       <td className="py-2 px-4">Daily</td>
-                      <td className="py-2 px-4">{days || ""}</td>
-                      <td className="py-2 px-4">$50</td>
-                      <td className="py-2 px-4">$500</td>
+                      <td className="py-2 px-4">{days || 0}</td>
+                      <td className="py-2 px-4">
+                        ${dailyRate?.toFixed(2) || 0}
+                      </td>
+                      <td className="py-2 px-4">
+                        ${totalDailyRate.toFixed(2)}
+                      </td>
                     </tr>
                     <tr>
                       <td className="py-2 px-4">Weekly</td>
-                      <td className="py-2 px-4">{weeks || ""}</td>
-                      <td className="py-2 px-4">$50</td>
-                      <td className="py-2 px-4">$500</td>
+                      <td className="py-2 px-4">{weeks || 0}</td>
+                      <td className="py-2 px-4">
+                        ${weeklyRate?.toFixed(2) || 0}
+                      </td>
+                      <td className="py-2 px-4">
+                        ${totalWeeklyRate?.toFixed(2)}
+                      </td>
                     </tr>
+
+                    {selectedOptions?.map((option, index) => {
+                      const [name, rate] = option.split(",");
+                      return (
+                        <tr key={index}>
+                          <td colSpan="2" className="py-2 px-4">
+                            {name}
+                          </td>
+                          <td className="py-2 px-4">
+                            ${parseInt(rate).toFixed(2)}
+                          </td>
+                          <td className="py-2 px-4">
+                            ${parseInt(rate).toFixed(2)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {calculateTaxAmount ? (
+                      <tr>
+                        <td colSpan="2" className="py-2 px-4">
+                          Rental Tax
+                        </td>
+
+                        <td className="py-2 px-4">11.5%</td>
+                        <td className="py-2 px-4">
+                          ${calculateTaxAmount?.toFixed(2)}
+                        </td>
+                      </tr>
+                    ) : null}
                     <tr>
                       <td colSpan="2" className="py-2 px-4">
                         Total
                       </td>
                       <td colSpan="2" className="py-2 px-4 text-right">
-                        $10.00
+                        ${finalRate?.toFixed(2)}
                       </td>
                     </tr>
                   </tbody>
