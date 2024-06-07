@@ -1,8 +1,84 @@
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { useState } from "react";
+
 export default function Reservation() {
+  const [selectedVehicleType, setselectedVehicleType] = useState("");
+  const [selectedVehicleName, setselectedVehicleName] = useState("");
+  const [startDateTime, setStartDateTime] = useState("");
+  const [endDateTime, setEndDateTime] = useState("");
+  const pickUpDate = new Date(startDateTime);
+  const returnDate = new Date(endDateTime);
+  const durationInSecond = (returnDate - pickUpDate) / 1000;
+  const durationInMinute = durationInSecond / 60;
+  const durationInHour = Math.floor(durationInMinute / 60);
+
+  // get data from api using tanstack query
+  const { data } = useQuery({
+    queryKey: ["vehicleData"],
+    queryFn: async () => {
+      return await axios.get(
+        "https://exam-server-7c41747804bf.herokuapp.com/carsList"
+      );
+    },
+  });
+  //   time conversion
+  function convertHoursToWeekDayHour(totalHours) {
+    const weeks = Math.floor(totalHours / (24 * 7));
+    const remainingHours = totalHours % (24 * 7);
+    const days = Math.floor(remainingHours / 24);
+    const remainingFinalHours = remainingHours % 24;
+
+    return { weeks, days, remainingFinalHours };
+  }
+  const { weeks, days, remainingFinalHours } =
+    convertHoursToWeekDayHour(durationInHour);
+
+  const vehicleData = data?.data?.data;
+  //   remove multiple type
+  const uniqueVehicleTypes = [...new Set(vehicleData?.map((car) => car.type))];
+
+  //   for select vehicle type
+  const handleselectedVehicleType = (e) => {
+    setselectedVehicleType(e.target.value);
+  };
+  //   select vehicle using vehicle type
+  const filteredVehicle = vehicleData?.filter(
+    (vehicle) => vehicle.type === selectedVehicleType
+  );
+  const handleVehicleName = (e) => {
+    setselectedVehicleName(e.target.value);
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    // window.open("http://localhost:4000/invoice", "_blank");
+    // const getData = e.target;
+    // const reservationID = getData.reservation_id.value;
+
+    axios
+      .post(
+        "https://server-ecru-six-77.vercel.app/invoice",
+        { name: "al" },
+        { responseType: "blob" }
+      )
+      .then((response) => {
+        const blob = new Blob([response.data], { type: "application/pdf" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "invoice.pdf";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      })
+      .catch((error) => console.error("Error generating PDF:", error));
+  };
+  console.log(selectedVehicleType, selectedVehicleName, durationInHour);
   return (
     <>
       <section className=" bg-slate-100">
-        <div className=" w-[90%] mx-auto py-10 ">
+        <form onSubmit={handleFormSubmit} className=" w-[90%] mx-auto py-10 ">
           <div className="flex justify-between items-center my-5">
             <h1 className="text-4xl font-bold">Reservation</h1>
             <button className="px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:bg-blue-600">
@@ -10,7 +86,7 @@ export default function Reservation() {
             </button>
           </div>
           <div className=" grid grid-cols-12 gap-5">
-            <form className=" col-span-8 grid grid-cols-12 gap-5">
+            <div className=" col-span-8 grid grid-cols-12 gap-5">
               <div className=" col-span-6 flex flex-col gap-6">
                 <div className=" w-full">
                   <div className="text-left">
@@ -44,7 +120,8 @@ export default function Reservation() {
                         type="datetime-local"
                         id="pickup_date"
                         required
-                        name="pickup_date"
+                        value={startDateTime}
+                        onChange={(e) => setStartDateTime(e.target.value)}
                         className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
@@ -57,7 +134,8 @@ export default function Reservation() {
                       </label>
                       <input
                         type="datetime-local"
-                        name=""
+                        value={endDateTime}
+                        onChange={(e) => setEndDateTime(e.target.value)}
                         id="return_date"
                         required
                         className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -109,14 +187,20 @@ export default function Reservation() {
                         Vehicle Type <span className=" text-red-600">*</span>
                       </label>
                       <select
+                        onChange={handleselectedVehicleType}
                         name="vehicle_type"
                         id="vehicle_type"
                         required
                         className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
-                        <option value="honda">Honda</option>
-                        <option value="toyota">Toyota</option>
-                        <option value="ford">Ford</option>
+                        <option disabled selected>
+                          Select Type
+                        </option>
+                        {uniqueVehicleTypes?.map((car, index) => (
+                          <option key={index} value={car}>
+                            {car}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
@@ -128,14 +212,20 @@ export default function Reservation() {
                         Vehicle <span className=" text-red-600">*</span>
                       </label>
                       <select
+                        onChange={handleVehicleName}
                         name="vehicle"
                         id="vehicle"
                         required
                         className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
-                        <option value="accord">Accord</option>
-                        <option value="civic">Civic</option>
-                        <option value="crv">CR-V</option>
+                        <option disabled selected>
+                          First Select Vehicle Type
+                        </option>
+                        {filteredVehicle?.map((car, index) => (
+                          <option key={index} value={car.make}>
+                            {car.make}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -267,7 +357,7 @@ export default function Reservation() {
                   </div>
                 </div>
               </div>
-            </form>
+            </div>
             <div className=" col-span-4">
               <div className="text-left">
                 <h1 className="text-2xl font-bold">Charges Summery</h1>
@@ -285,8 +375,20 @@ export default function Reservation() {
                   </thead>
                   <tbody>
                     <tr>
-                      <td className="py-2 px-4">Service A</td>
-                      <td className="py-2 px-4">10</td>
+                      <td className="py-2 px-4">Hourly</td>
+                      <td className="py-2 px-4">{remainingFinalHours || ""}</td>
+                      <td className="py-2 px-4">$50</td>
+                      <td className="py-2 px-4">$500</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-4">Daily</td>
+                      <td className="py-2 px-4">{days || ""}</td>
+                      <td className="py-2 px-4">$50</td>
+                      <td className="py-2 px-4">$500</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-4">Weekly</td>
+                      <td className="py-2 px-4">{weeks || ""}</td>
                       <td className="py-2 px-4">$50</td>
                       <td className="py-2 px-4">$500</td>
                     </tr>
@@ -303,7 +405,7 @@ export default function Reservation() {
               </div>
             </div>
           </div>
-        </div>
+        </form>
       </section>
     </>
   );
