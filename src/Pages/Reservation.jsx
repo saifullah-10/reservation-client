@@ -106,7 +106,6 @@ export default function Reservation() {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    // window.open("http://localhost:4000/invoice", "_blank");
     const getData = e.target;
     const reservationID = getData.reservation_id.value;
     const firstName = getData.first_name.value;
@@ -147,7 +146,7 @@ export default function Reservation() {
           "",
           `$ ${(totalRate + calculateTaxAmount).toFixed(2)}`,
         ],
-        ["Discount", "", "", `-$ ${calculateDiscountAmount}`],
+        ["Discount", "", "", `-$ ${calculateDiscountAmount?.toFixed(2)}`],
         ["Damages", "", "", `$ ${totalOptionsRate}`],
         ["Traffic tickets", "", "", "$0.00"],
         ["TOTAL ESTIMATED CHARGES", "", "", `$ ${finalRate?.toFixed(2)}`],
@@ -165,7 +164,9 @@ export default function Reservation() {
     console.log(data);
 
     axios
-      .post("http://localhost:4000/invoice", data, { responseType: "blob" })
+      .post("https://server-gold-one.vercel.app/invoice", data, {
+        responseType: "blob",
+      })
       .then((response) => {
         const blob = new Blob([response.data], { type: "application/pdf" });
         const url = window.URL.createObjectURL(blob);
