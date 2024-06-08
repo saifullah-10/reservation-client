@@ -6,6 +6,7 @@ export default function Reservation() {
   const [selectedVehicleType, setselectedVehicleType] = useState("");
   const [selectedVehicleName, setselectedVehicleName] = useState("");
   const [startDateTime, setStartDateTime] = useState("");
+  const [discount, setDiscount] = useState("");
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [endDateTime, setEndDateTime] = useState("");
   const [rentalTax, setRentalTax] = useState("");
@@ -16,7 +17,7 @@ export default function Reservation() {
   const durationInHour = Math.floor(durationInMinute / 60);
 
   // get data from api using tanstack query
-  const { data, isPending } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["vehicleData"],
     queryFn: async () => {
       return await axios.get(
@@ -57,9 +58,11 @@ export default function Reservation() {
       setRentalTax("");
     }
   };
-  const taxPercentage = rentalTax?.split(",")[1];
+  const taxPercentage = rentalTax?.split(",")[1] || 0;
   const taxRate = parseFloat(taxPercentage);
-  // for checkboxes
+  // for discount calculation
+  const validateDiscount = discount ? discount : 0;
+  // for additional charges
   const handleCheckboxChange = (event) => {
     const { checked, value } = event.target;
 
@@ -82,6 +85,7 @@ export default function Reservation() {
       vehicle.type === selectedVehicleType &&
       vehicle.make === selectedVehicleName
   );
+  // Calculate rates from array
   const getRatesFromArray = singleVehicaleForRate?.[0]?.rates;
   const hourlyRate = getRatesFromArray?.hourly;
   const dailyRate = getRatesFromArray?.daily;
@@ -89,12 +93,13 @@ export default function Reservation() {
   const totalHourlyRate = remainingFinalHours * hourlyRate || 0;
   const totalDailyRate = days * dailyRate || 0;
   const totalWeeklyRate = weeks * weeklyRate || 0;
-  const totalRate =
-    totalHourlyRate + totalDailyRate + totalWeeklyRate + totalOptionsRate;
+  const totalRate = totalHourlyRate + totalDailyRate + totalWeeklyRate;
   const calculateTaxAmount = (totalRate * taxRate) / 100;
-  const finalRate = calculateTaxAmount
-    ? totalRate - calculateTaxAmount
-    : totalRate;
+  const calculateDiscountAmount =
+    ((totalRate + calculateTaxAmount + totalOptionsRate) * validateDiscount) /
+    100;
+  const finalRate =
+    totalRate + calculateTaxAmount + totalOptionsRate - calculateDiscountAmount;
   const handleVehicleName = (e) => {
     setselectedVehicleName(e.target.value);
   };
@@ -102,29 +107,79 @@ export default function Reservation() {
   const handleFormSubmit = (e) => {
     e.preventDefault();
     // window.open("http://localhost:4000/invoice", "_blank");
-    // const getData = e.target;
-    // const reservationID = getData.reservation_id.value;
+    const getData = e.target;
+    const reservationID = getData.reservation_id.value;
+    const firstName = getData.first_name.value;
+    const lastName = getData.last_name.value;
+    const email = getData.email.value;
+    const phone = getData.phone.value;
+
+    const data = {
+      reservation_id: reservationID,
+      first_name: firstName,
+      last_name: lastName,
+      email: email,
+      phone: phone,
+      summaryData: [
+        ["", "UNIT", "PRICE", "AMOUNT"],
+        [
+          "Hourly",
+          `${remainingFinalHours || 0}`,
+          `$ ${hourlyRate || 0}`,
+          `$ ${totalHourlyRate}`,
+        ],
+        ["Daily", `${days || 0}`, `$ ${dailyRate || 0}`, `$ ${totalDailyRate}`],
+        [
+          "Weekly",
+          `${weeks || 0}`,
+          `$ ${weeklyRate || 0}`,
+          `$ ${totalWeeklyRate}`,
+        ],
+        [
+          "NYS State Tax",
+          "",
+          `${taxPercentage}%`,
+          `$ ${calculateTaxAmount?.toFixed(2)}`,
+        ],
+        [
+          "EST TOTAL TIME & MILAGE",
+          "",
+          "",
+          `$ ${(totalRate + calculateTaxAmount).toFixed(2)}`,
+        ],
+        ["Discount", "", "", `-$ ${calculateDiscountAmount}`],
+        ["Damages", "", "", `$ ${totalOptionsRate}`],
+        ["Traffic tickets", "", "", "$0.00"],
+        ["TOTAL ESTIMATED CHARGES", "", "", `$ ${finalRate?.toFixed(2)}`],
+        ["Renter Payments", "", "", `$ ${finalRate?.toFixed(2)}`],
+      ],
+      vehicle_type: selectedVehicleType,
+      vehicle_name: selectedVehicleName,
+      start_date_time: startDateTime,
+      end_date_time: endDateTime,
+      rental_tax: rentalTax,
+      discount: discount,
+      options: selectedOptions,
+      total_rate: finalRate,
+    };
+    console.log(data);
 
     axios
-      .post(
-        "https://server-ecru-six-77.vercel.app/invoice",
-        { name: "al" },
-        { responseType: "blob" }
-      )
+      .post("http://localhost:4000/invoice", data, { responseType: "blob" })
       .then((response) => {
         const blob = new Blob([response.data], { type: "application/pdf" });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "invoice.pdf";
+        a.download = "Reservation_invoice.pdf";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
       })
       .catch((error) => console.error("Error generating PDF:", error));
   };
-  console.log();
-  if (isPending) {
+
+  if (isLoading) {
     return <h1>Loading...</h1>;
   }
   return (
@@ -204,8 +259,12 @@ export default function Reservation() {
                         type="text"
                         id="duration"
                         name="duration"
-                        value="duration"
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        readOnly
+                        disabled
+                        value={`${weeks || 0} Week ${days || 0} Day ${
+                          remainingFinalHours || 0
+                        } Hour`}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none "
                       />
                     </div>
                     <div className=" mb-4">
@@ -213,13 +272,14 @@ export default function Reservation() {
                         htmlFor="discount"
                         className="block text-lg font-medium text-gray-700 mb-2"
                       >
-                        Discount
+                        Discount %
                       </label>
                       <input
                         type="number"
                         id="discount"
+                        onChange={(e) => setDiscount(e.target.value)}
                         name="discount"
-                        value="discount"
+                        value={discount}
                         className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
@@ -349,7 +409,7 @@ export default function Reservation() {
                         Phone <span className=" text-red-600">*</span>
                       </label>
                       <input
-                        type="tel"
+                        type="number"
                         id="phone"
                         name="phone"
                         required
@@ -488,6 +548,18 @@ export default function Reservation() {
                         <td className="py-2 px-4">11.5%</td>
                         <td className="py-2 px-4">
                           ${calculateTaxAmount?.toFixed(2)}
+                        </td>
+                      </tr>
+                    ) : null}
+                    {discount ? (
+                      <tr>
+                        <td colSpan="2" className="py-2 px-4">
+                          Discount
+                        </td>
+
+                        <td className="py-2 px-4">{discount}%</td>
+                        <td className="py-2 px-4">
+                          - ${calculateDiscountAmount?.toFixed(2)}
                         </td>
                       </tr>
                     ) : null}
