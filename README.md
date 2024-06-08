@@ -8,7 +8,7 @@ Recently, this application's client-side has been hosted in Firebase and the ser
 - Install Axios (Follow axios documentation).
 - Install Tanstack query (Follow Tanstack query documentation).
 - Install Tailwind CSS (Follow Tailwind CSS documentation).
-- Change the URL from Reservation.jsx file to your local server URL.(If you don't setup server in your local system, no need to follow this step)
+- Change the URL from Reservation.jsx file to your local server URL. (If you don't set up server in your local system, no need to follow this step)
   
 Now, let's set up server-side code in your local environment.
 
@@ -21,4 +21,18 @@ Now, let's set up server-side code in your local environment.
 
 If you follow these steps properly, you will  run this application in your local environment.
 
-Thank You
+# Bonus solution:
+
+- I have a Tesla in my system that charges $10 per hour and $50 per day. So if a client rented this car for 6 hours he/she needs to pay $60. But according to our packages, we provide the whole day rent service for $50. This creates a situation where the cost of renting the car for six hours $60 exceeds the daily rate of $50. We need to ensure that the customer always pays the lowest possible rate. Let's make an algorithm:
+
+  First, specify the rates:
+ - **Hourly Rate**: $10 per hour
+ - **Daily Rate**: $50 per day
+ - **Weekly Rate**: $300 per week
+
+Now, calculate the total cost based on hourly rate, daily rate, and weekly rate. Then compare all of the costs and charges to the customer that is the minimum. 
+
+
+This approach ensures fairness and transparency in the pricing of car rentals, making sure that customers are always offered the best possible rate.
+
+Thank You.
