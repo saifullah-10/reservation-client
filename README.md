@@ -32,7 +32,6 @@ If you follow these steps properly, you will  run this application in your local
 
 Now, calculate the total cost based on hourly rate, daily rate, and weekly rate. Then compare all of the costs and charges to the customer that is the minimum. 
 
-
-This approach ensures fairness and transparency in the pricing of car rentals, making sure that customers are always offered the best possible rate.
+This algorithm is implemented in a function that receives rented hours (provided by the customer) and then calculates the minimum option and finally returns that. This approach ensures fairness and transparency in the pricing of  car rentals, making sure that customers are always offered the best possible rate.
 
 Thank You.
