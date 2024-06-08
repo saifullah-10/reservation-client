@@ -188,17 +188,21 @@ export default function Reservation() {
       <section className=" bg-slate-100">
         <form onSubmit={handleFormSubmit} className=" w-[90%] mx-auto py-10 ">
           <div className="flex justify-between items-center my-5">
-            <h1 className="text-4xl font-bold">Reservation</h1>
-            <button className="px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:bg-blue-600">
+            <h1 className="lg:text-4xl text-2xl md:text-3xl font-bold">
+              Reservation
+            </h1>
+            <button className="px-4 lg:py-2 py-1 rounded-md bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:bg-blue-600">
               Print / Download
             </button>
           </div>
           <div className=" grid grid-cols-12 gap-5">
-            <div className=" col-span-8 grid grid-cols-12 gap-5">
-              <div className=" col-span-6 flex flex-col gap-6">
+            <div className="  col-span-12 lg:col-span-8 grid grid-cols-12 gap-5">
+              <div className=" col-span-12 md:col-span-6 lg:col-span-6 flex flex-col gap-6">
                 <div className=" w-full">
                   <div className="text-left">
-                    <h1 className="text-2xl font-bold">Reservation Details</h1>
+                    <h1 className=" text-xl lg:text-2xl font-bold">
+                      Reservation Details
+                    </h1>
                     <hr className="border-indigo-500 border-2 mt-2 mb-4" />
                   </div>
                   <div className="bg-white p-4 border-gray-300 border-2 rounded-lg shadow-md">
@@ -288,7 +292,9 @@ export default function Reservation() {
                 </div>
                 <div className=" w-full">
                   <div className="text-left">
-                    <h1 className="text-2xl font-bold">Vehicle Information</h1>
+                    <h1 className="text-xl lg:text-2xl font-bold">
+                      Vehicle Information
+                    </h1>
                     <hr className="border-indigo-500 border-2 mt-2 mb-4" />
                   </div>
                   <div className="bg-white p-4 border-2 border-gray-300 rounded-lg shadow-md">
@@ -344,10 +350,12 @@ export default function Reservation() {
                   </div>
                 </div>
               </div>
-              <div className=" col-span-6 flex flex-col gap-6">
+              <div className=" col-span-12 md:col-span-6 lg:col-span-6 flex flex-col gap-6">
                 <div className="w-full">
                   <div className="text-left">
-                    <h1 className="text-2xl font-bold">Customer Information</h1>
+                    <h1 className="text-xl lg:text-2xl font-bold">
+                      Customer Information
+                    </h1>
                     <hr className="border-indigo-500 border-2 mt-2 mb-4" />
                   </div>
                   <div className="bg-white border-gray-300 border-2 p-4 rounded-lg shadow-md ">
@@ -422,7 +430,9 @@ export default function Reservation() {
                 </div>
                 <div className=" w-full">
                   <div className="text-left">
-                    <h1 className="text-2xl font-bold">Additional Charges</h1>
+                    <h1 className="text-xl lg:text-2xl font-bold">
+                      Additional Charges
+                    </h1>
                     <hr className="border-indigo-500 border-2 mt-2 mb-4" />
                   </div>
                   <div className="bg-white p-4 rounded-lg border-2 border-gray-300 shadow-md">
@@ -477,12 +487,14 @@ export default function Reservation() {
                 </div>
               </div>
             </div>
-            <div className=" col-span-4">
+            <div className="col-span-12 lg:col-span-4">
               <div className="text-left">
-                <h1 className="text-2xl font-bold">Charges Summery</h1>
+                <h1 className=" text-xl lg:text-2xl font-bold">
+                  Charges Summery
+                </h1>
                 <hr className="border-indigo-500 border-2 mt-2 mb-4" />
               </div>
-              <div className="bg-[#dfdfff] w-full border-2 border-blue-500 p-5   shadow-md rounded-xl">
+              <div className="bg-[#dfdfff] w-full border-2 border-blue-500 p-5  overflow-x-auto   shadow-md rounded-xl">
                 <table className=" w-full">
                   <thead>
                     <tr className=" border-b-2 border-blue-500">
@@ -494,32 +506,34 @@ export default function Reservation() {
                   </thead>
                   <tbody>
                     <tr>
-                      <td className="py-2 px-4">Hourly</td>
-                      <td className="py-2 px-4">{remainingFinalHours || 0}</td>
-                      <td className="py-2 px-4">
+                      <td className="py-2 px-4 ">Hourly</td>
+                      <td className="py-2 px-4 text-center">
+                        {remainingFinalHours || 0}
+                      </td>
+                      <td className="py-2 px-4 text-center">
                         ${hourlyRate?.toFixed(2) || 0}
                       </td>
-                      <td className="py-2 px-4">
+                      <td className="py-2 px-4 text-center">
                         ${totalHourlyRate?.toFixed(2)}
                       </td>
                     </tr>
                     <tr>
-                      <td className="py-2 px-4">Daily</td>
-                      <td className="py-2 px-4">{days || 0}</td>
-                      <td className="py-2 px-4">
+                      <td className="py-2 px-4 ">Daily</td>
+                      <td className="py-2 px-4 text-center">{days || 0}</td>
+                      <td className="py-2 px-4 text-center">
                         ${dailyRate?.toFixed(2) || 0}
                       </td>
-                      <td className="py-2 px-4">
+                      <td className="py-2 px-4 text-center">
                         ${totalDailyRate.toFixed(2)}
                       </td>
                     </tr>
                     <tr>
-                      <td className="py-2 px-4">Weekly</td>
-                      <td className="py-2 px-4">{weeks || 0}</td>
-                      <td className="py-2 px-4">
+                      <td className="py-2 px-4 ">Weekly</td>
+                      <td className="py-2 px-4 text-center">{weeks || 0}</td>
+                      <td className="py-2 px-4 text-center">
                         ${weeklyRate?.toFixed(2) || 0}
                       </td>
-                      <td className="py-2 px-4">
+                      <td className="py-2 px-4 text-center">
                         ${totalWeeklyRate?.toFixed(2)}
                       </td>
                     </tr>
@@ -528,13 +542,13 @@ export default function Reservation() {
                       const [name, rate] = option.split(",");
                       return (
                         <tr key={index}>
-                          <td colSpan="2" className="py-2 px-4">
+                          <td colSpan="2" className="py-2 px-4 ">
                             {name}
                           </td>
-                          <td className="py-2 px-4">
+                          <td className="py-2 px-4 text-center">
                             ${parseInt(rate).toFixed(2)}
                           </td>
-                          <td className="py-2 px-4">
+                          <td className="py-2 px-4 text-center">
                             ${parseInt(rate).toFixed(2)}
                           </td>
                         </tr>
@@ -546,8 +560,8 @@ export default function Reservation() {
                           Rental Tax
                         </td>
 
-                        <td className="py-2 px-4">11.5%</td>
-                        <td className="py-2 px-4">
+                        <td className="py-2 px-4 text-center">11.5%</td>
+                        <td className="py-2 px-4 text-center">
                           ${calculateTaxAmount?.toFixed(2)}
                         </td>
                       </tr>
@@ -558,17 +572,23 @@ export default function Reservation() {
                           Discount
                         </td>
 
-                        <td className="py-2 px-4">{discount}%</td>
-                        <td className="py-2 px-4">
+                        <td className="py-2 px-4 text-center">{discount}%</td>
+                        <td className="py-2 px-4 text-center">
                           - ${calculateDiscountAmount?.toFixed(2)}
                         </td>
                       </tr>
                     ) : null}
                     <tr>
-                      <td colSpan="2" className="py-2 px-4">
+                      <td
+                        colSpan="2"
+                        className="py-2 font-bold px-4 text-center"
+                      >
                         Total
                       </td>
-                      <td colSpan="2" className="py-2 px-4 text-right">
+                      <td
+                        colSpan="2"
+                        className="py-2 px-4 font-bold text-center"
+                      >
                         ${finalRate?.toFixed(2)}
                       </td>
                     </tr>
