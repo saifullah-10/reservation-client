@@ -1,5 +1,7 @@
 # Documentation
 
+Live Link: https://asset-management-6b046.web.app/
+
 How to run this application locally?
 
 Recently, this application's client-side has been hosted in Firebase and the server side has been hosted in Vercel. If you want to run this application in your local environment, you need to follow some steps.
